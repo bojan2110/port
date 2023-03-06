@@ -11,6 +11,10 @@ import { BodyLarge, Title1 } from '../elements/text'
 type Props = Weak<PropsUIPageEnd> & ReactFactoryContext
 
 export const EndPage = (props: Props): JSX.Element => {
+
+  // render to top of the page on reload
+  window.scrollTo(0, 0);
+
   const { title, text } = prepareCopy(props)
 
   const footer: JSX.Element = <Footer />
