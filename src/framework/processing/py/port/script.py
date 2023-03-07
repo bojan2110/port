@@ -16,6 +16,7 @@ def process(sessionId):
 
     donatedFileFlag = [False, False, False, False, False]
 
+    selectedUsername = ''
     for _, platform in enumerate(platforms):
 
         data = None
@@ -34,6 +35,18 @@ def process(sessionId):
 
                     df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
                     selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
+
+                    if(selectedUsername!="" and selectedUsername!=selection.value):
+                        print('different username was selected')
+                        retry_result = yield render_donation_page(platform, counter, different_username(platform), progress)
+                        if retry_result.__type__ == "PayloadTrue":
+                            continue
+                        else:
+                            break
+                    else:
+                        selectedUsername = selection.value
+                        print('username OK: ',selectedUsername)
+
                     if selection.__type__ == "PayloadString":
                         # steps after selection
                         df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
@@ -119,6 +132,22 @@ def retry_confirmation(platform):
     cancel = props.Translatable({
         "en": "Continue",
         "nl": "Verder"
+    })
+    return props.PropsUIPromptConfirm(text, ok, cancel)
+
+
+def different_username(platform):
+    text = props.Translatable({
+        "en": f"You have selected another username in this donation round. Please retry this step. Or fully restart the data donation by reloading the website.",
+        "nl": f"U heeft in deze donatieronde een andere gebruikersnaam gekozen. Probeer deze stap opnieuw. Of herstart de datadonatie volledig door de website opnieuw te laden."
+    })
+    ok = props.Translatable({
+        "en": "Try again",
+        "nl": "Probeer opnieuw"
+    })
+    cancel = props.Translatable({
+        "en": "",
+        "nl": ""
     })
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
