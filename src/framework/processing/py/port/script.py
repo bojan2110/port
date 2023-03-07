@@ -38,17 +38,6 @@ def process(sessionId):
                         selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
                         selectedUsername = selection.value
 
-                    # if(selectedUsername!="" and selectedUsername!=selection.value):
-                    #     print('different username was selected')
-                    #     retry_result = yield render_donation_page(platform, counter, different_username(platform), progress)
-                    #     if retry_result.__type__ == "PayloadTrue":
-                    #         continue
-                    #     else:
-                    #         break
-                    # else:
-                    #     selectedUsername = selection.value
-                    #     print('username OK: ',selectedUsername)
-
                     if selection.__type__ == "PayloadString":
                         # steps after selection
                         df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
@@ -57,8 +46,14 @@ def process(sessionId):
                         list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
 
                         data = list_with_df_with_chats
+                        if not data:
+                            print('no data for this user')
+                            retry_result = yield render_donation_page(platform, counter, different_username(selectedUsername), progress)
+                            if retry_result.__type__ == "PayloadTrue":
+                                continue
+                            else:
+                                break
 
-                        donatedFileFlag[counter-1] = True
                         break
                 # If not enter retry flow
                 else:
@@ -72,20 +67,11 @@ def process(sessionId):
 
         # STEP 2: ask for consent
         progress += step_percentage
-        print('STEP2 data', data)
-        if not data:
-            print('no data for this user')
-            retry_result = yield render_donation_page(platform, counter, different_username(platform), progress)
-            if retry_result.__type__ == "PayloadTrue":
-                continue
-            else:
-                break
-        else:
-            print('im hereeeeeee')
-            prompt = prompt_consent(data)
-            consent_result = yield render_donation_page(platform, counter, prompt, progress)
-            if consent_result.__type__ == "PayloadJSON":
-                yield donate(f"{sessionId}-{platform}", consent_result.value)
+        donatedFileFlag[counter-1] = True
+        prompt = prompt_consent(data)
+        consent_result = yield render_donation_page(platform, counter, prompt, progress)
+        if consent_result.__type__ == "PayloadJSON":
+            yield donate(f"{sessionId}-{platform}", consent_result.value)
 
 
     yield render_end_page()
@@ -148,10 +134,10 @@ def retry_confirmation(platform):
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
 
-def different_username(platform):
+def different_username(username):
     text = props.Translatable({
-        "en": f"You have selected another username in this donation round. Please retry this step. Or fully restart the data donation by reloading the website.",
-        "nl": f"U heeft in deze donatieronde een andere gebruikersnaam gekozen. Probeer deze stap opnieuw. Of herstart de datadonatie volledig door de website opnieuw te laden."
+        "en": f"Your username {username} was not found in the uploaded file. Please try again by uploading a valid file. Otherwise, restart the data donation process by reloading the website.",
+        "nl": f"Uw gebruikersnaam {username} is niet gevonden in het geüploade bestand. Probeer het opnieuw door een geldig bestand te uploaden. Start anders het gegevensdonatieproces opnieuw door de website opnieuw te laden."
     })
     ok = props.Translatable({
         "en": "Try again",
