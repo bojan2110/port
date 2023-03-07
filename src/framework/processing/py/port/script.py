@@ -34,18 +34,20 @@ def process(sessionId):
                 if not df_with_chats.empty:
 
                     df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
-                    selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
-
-                    if(selectedUsername!="" and selectedUsername!=selection.value):
-                        print('different username was selected')
-                        retry_result = yield render_donation_page(platform, counter, different_username(platform), progress)
-                        if retry_result.__type__ == "PayloadTrue":
-                            continue
-                        else:
-                            break
-                    else:
+                    if(selectedUsername == ""):
+                        selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
                         selectedUsername = selection.value
-                        print('username OK: ',selectedUsername)
+
+                    # if(selectedUsername!="" and selectedUsername!=selection.value):
+                    #     print('different username was selected')
+                    #     retry_result = yield render_donation_page(platform, counter, different_username(platform), progress)
+                    #     if retry_result.__type__ == "PayloadTrue":
+                    #         continue
+                    #     else:
+                    #         break
+                    # else:
+                    #     selectedUsername = selection.value
+                    #     print('username OK: ',selectedUsername)
 
                     if selection.__type__ == "PayloadString":
                         # steps after selection
@@ -70,11 +72,21 @@ def process(sessionId):
 
         # STEP 2: ask for consent
         progress += step_percentage
-        if not (data is None):
+        print('STEP2 data', data)
+        if not data:
+            print('no data for this user')
+            retry_result = yield render_donation_page(platform, counter, different_username(platform), progress)
+            if retry_result.__type__ == "PayloadTrue":
+                continue
+            else:
+                break
+        else:
+            print('im hereeeeeee')
             prompt = prompt_consent(data)
             consent_result = yield render_donation_page(platform, counter, prompt, progress)
             if consent_result.__type__ == "PayloadJSON":
                 yield donate(f"{sessionId}-{platform}", consent_result.value)
+
 
     yield render_end_page()
 
@@ -151,6 +163,21 @@ def different_username(platform):
     })
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
+
+def confirm_username(platform):
+    text = props.Translatable({
+        "en": f"Confirm that you are X?",
+        "nl": f"Confirm that you are X?"
+    })
+    ok = props.Translatable({
+        "en": "No",
+        "nl": "No"
+    })
+    cancel = props.Translatable({
+        "en": "Yes",
+        "nl": "Yes"
+    })
+    return props.PropsUIPromptConfirm(text, ok, cancel)
 
 def prompt_file(platform,counter, extensions,donatedFileFlag):
     promptStringsSuccess = ['Hi, you are about to donate your first whatsapp file. ',
