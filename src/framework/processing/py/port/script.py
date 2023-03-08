@@ -15,8 +15,9 @@ def process(sessionId):
     progress = 0
 
     donatedFileFlag = [False, False, False, False, False]
-
     selectedUsername = ''
+    donatedFileNames = []
+
     for _, platform in enumerate(platforms):
 
         data = None
@@ -31,22 +32,26 @@ def process(sessionId):
                 df_with_chats = port.whatsapp.parse_chat(fileResult.value)
 
                 # If data extracted was successful
-                if not df_with_chats.empty:
+                if not df_with_chats.empty and fileResult.value not in donatedFileNames:
 
                     df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
-                    if(selectedUsername == ""):
+                    if selectedUsername == "":
                         selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
                         selectedUsername = selection.value
 
                     if selection.__type__ == "PayloadString":
                         # steps after selection
-                        df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
-                        df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
-                        df_with_chats = port.whatsapp.remove_date_column(df_with_chats)
-                        list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
 
-                        data = list_with_df_with_chats
-                        if not data:
+                        # Check if selected user is present in chat
+                        list_with_users = port.whatsapp.extract_users(df_with_chats)
+                        if selectedUsername in list_with_users:
+                            df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
+                            df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
+                            df_with_chats = port.whatsapp.remove_date_column(df_with_chats)
+                            list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
+                            data = list_with_df_with_chats
+                            break
+                        else:
                             print('no data for this user')
                             retry_result = yield render_donation_page(platform, counter, different_username(selectedUsername), progress)
                             if retry_result.__type__ == "PayloadTrue":
@@ -54,7 +59,14 @@ def process(sessionId):
                             else:
                                 break
 
+                # Check if file was not previously donated
+                if fileResult.value in donatedFileNames:
+                    retry_result = yield render_donation_page(platform, counter, retry_different_file(fileResult.value), progress)
+                    if retry_result.__type__ == "PayloadTrue":
+                        continue
+                    else:
                         break
+
                 # If not enter retry flow
                 else:
                     retry_result = yield render_donation_page(platform, counter, retry_confirmation(platform), progress)
@@ -65,13 +77,18 @@ def process(sessionId):
             else:
                 break
 
-        # STEP 2: ask for consent
         progress += step_percentage
-        donatedFileFlag[counter-1] = True
-        prompt = prompt_consent(data)
-        consent_result = yield render_donation_page(platform, counter, prompt, progress)
-        if consent_result.__type__ == "PayloadJSON":
-            yield donate(f"{sessionId}-{platform}", consent_result.value)
+
+        # This check should be here to account for the skip button being 
+        # This button can be pressed at any moment
+        if data is not None:
+            # STEP 2: ask for consent
+            donatedFileFlag[counter-1] = True
+            prompt = prompt_consent(data)
+            consent_result = yield render_donation_page(platform, counter, prompt, progress)
+            if consent_result.__type__ == "PayloadJSON":
+                yield donate(f"{sessionId}-{platform}", consent_result.value)
+                donatedFileNames.append(fileResult.value)
 
 
     yield render_end_page()
@@ -116,6 +133,22 @@ def render_donation_page(platform,counter, body, progress):
     footer = props.PropsUIFooter(progress)
     page = props.PropsUIPageDonation(platform, header, body, footer)
     return CommandUIRender(page)
+
+
+def retry_different_file(file_name):
+    text = props.Translatable({
+        "en": f"Je hebt {file_name} al gedoneerd, probeer een ander bestand",
+        "nl": f"Je hebt {file_name} al gedoneerd, probeer een ander bestand"
+    })
+    ok = props.Translatable({
+        "en": "Try again",
+        "nl": "Probeer opnieuw"
+    })
+    cancel = props.Translatable({
+        "en": "Continue",
+        "nl": "Verder"
+    })
+    return props.PropsUIPromptConfirm(text, ok, cancel)
 
 
 def retry_confirmation(platform):
