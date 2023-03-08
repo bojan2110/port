@@ -16,75 +16,63 @@ def process(sessionId):
 
     donatedFileFlag = [False, False, False, False, False]
 
-    donatedFileNames = []
-
+    selectedUsername = ''
     for _, platform in enumerate(platforms):
-
 
         data = None
         progress += step_percentage
         counter = counter + 1
-        print('platforms counter', counter)
-        print('platforms progress', progress)
+
         while True:
-            print('platforms while true', counter)
             promptFile = prompt_file(platform,counter, "application/zip, text/plain",donatedFileFlag)
             fileResult = yield render_donation_page(platform, counter, promptFile, progress)
-            print('fileResult: ',fileResult.value)
-            print('donatedFileNames: ',donatedFileNames)
+            if fileResult.__type__ == 'PayloadString':
 
-            if fileResult.value in donatedFileNames:
-                print('duplicate donation')
-                # platforms.append("Whatsapp")
-                # counter = counter - 1
-                # progress -= step_percentage
-                retry_result = yield render_donation_page(platform, counter, duplicate_found(platform), progress)
-                if retry_result.__type__ == "PayloadTrue":
-                    continue
-                else:
-                    break
+                df_with_chats = port.whatsapp.parse_chat(fileResult.value)
 
-            else:
-                print('non duplicate donation')
+                # If data extracted was successful
+                if not df_with_chats.empty:
 
-                if fileResult.__type__ == 'PayloadString':
-
-                    df_with_chats = port.whatsapp.parse_chat(fileResult.value)
-
-                    # If data extracted was successful
-                    if not df_with_chats.empty:
-
-                        df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
+                    df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
+                    if(selectedUsername == ""):
                         selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
-                        if selection.__type__ == "PayloadString":
-                            # steps after selection
-                            df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
-                            df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
-                            df_with_chats = port.whatsapp.remove_date_column(df_with_chats)
-                            list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
+                        selectedUsername = selection.value
 
-                            data = list_with_df_with_chats
+                    if selection.__type__ == "PayloadString":
+                        # steps after selection
+                        df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
+                        df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
+                        df_with_chats = port.whatsapp.remove_date_column(df_with_chats)
+                        list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
 
-                            break
-                    # If not enter retry flow
-                    else:
-                        retry_result = yield render_donation_page(platform, counter, retry_confirmation(platform), progress)
-                        if retry_result.__type__ == "PayloadTrue":
-                            continue
-                        else:
-                            break
+                        data = list_with_df_with_chats
+                        if not data:
+                            print('no data for this user')
+                            retry_result = yield render_donation_page(platform, counter, different_username(selectedUsername), progress)
+                            if retry_result.__type__ == "PayloadTrue":
+                                continue
+                            else:
+                                break
+
+                        break
+                # If not enter retry flow
                 else:
-                    break
+                    retry_result = yield render_donation_page(platform, counter, retry_confirmation(platform), progress)
+                    if retry_result.__type__ == "PayloadTrue":
+                        continue
+                    else:
+                        break
+            else:
+                break
 
         # STEP 2: ask for consent
         progress += step_percentage
-        if not (data is None):
-            prompt = prompt_consent(data)
-            consent_result = yield render_donation_page(platform, counter, prompt, progress)
-            if consent_result.__type__ == "PayloadJSON":
-                donatedFileFlag[counter-1] = True
-                donatedFileNames.append(fileResult.value)
-                yield donate(f"{sessionId}-{platform}", consent_result.value)
+        donatedFileFlag[counter-1] = True
+        prompt = prompt_consent(data)
+        consent_result = yield render_donation_page(platform, counter, prompt, progress)
+        if consent_result.__type__ == "PayloadJSON":
+            yield donate(f"{sessionId}-{platform}", consent_result.value)
+
 
     yield render_end_page()
 
@@ -146,36 +134,49 @@ def retry_confirmation(platform):
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
 
-
-def duplicate_found(platform):
+def different_username(username):
     text = props.Translatable({
-        "en": f"The selected Whatsapp file has been already donated. Would you like to try with another file?",
-        "nl": f"Het geselecteerde Whatsapp-bestand is al gedoneerd. Wil je het eens met een ander bestand proberen?"
+        "en": f"Your username {username} was not found in the uploaded file. Please try again by uploading a valid file. Otherwise, restart the data donation process by reloading the website.",
+        "nl": f"Uw gebruikersnaam {username} is niet gevonden in het geüploade bestand. Probeer het opnieuw door een geldig bestand te uploaden. Start anders het gegevensdonatieproces opnieuw door de website opnieuw te laden."
     })
     ok = props.Translatable({
         "en": "Try again",
         "nl": "Probeer opnieuw"
     })
     cancel = props.Translatable({
-        "en": "Continue",
-        "nl": "Verder"
+        "en": "",
+        "nl": ""
     })
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
 
-def prompt_file(platform,counter, extensions,donatedFileFlag):
+def confirm_username(platform):
+    text = props.Translatable({
+        "en": f"Confirm that you are X?",
+        "nl": f"Confirm that you are X?"
+    })
+    ok = props.Translatable({
+        "en": "No",
+        "nl": "No"
+    })
+    cancel = props.Translatable({
+        "en": "Yes",
+        "nl": "Yes"
+    })
+    return props.PropsUIPromptConfirm(text, ok, cancel)
 
+def prompt_file(platform,counter, extensions,donatedFileFlag):
     promptStringsSuccess = ['Hi, you are about to donate your first whatsapp file. ',
     f'You have successfully donated your first file. It\'s time for the second one.',
     'Nice, your second upload was successful. Let\'s move to the third file.',
     'Great, we got that. You have two files left. Expecting your fourth whatsapp now.',
     'Fourth file done! We are almost there, you are about to donate your last whatsapp file. ']
 
-    # only valid from the second round. Change them
-    promptStringNoSuscess = ['Ups, no file was donated in the previous step (File 1).',
-    'Ups, no file was donated in the previous step (File 2).',
-    'Ups, no file was donated in the previous step (File 3).',
-    'Ups, no file was donated in the previous step (File 4).']
+    # only valid from the second round.
+    promptStringNoSuscess = ['Ups, no file was donated in the previous step (File 1). Want to try from stratch again?',
+    'Ups, no file was donated in the previous step (File 2). Want to try from stratch again?',
+    'Ups, no file was donated in the previous step (File 3). Want to try from stratch again?',
+    'Ups, no file was donated in the previous step (File 4). Want to try from stratch again?']
 
     descriptionString = ''
 
