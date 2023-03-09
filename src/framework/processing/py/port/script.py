@@ -52,7 +52,7 @@ def process(sessionId):
                         # If user skips during this process, selectedUsername remains equal to ""
                         if selection.__type__ == "PayloadString":
                             selectedUsername = selection.value
-                    
+
                     # If selected does not occur in chat
                     if selectedUsername not in list_with_users:
                         retry_result = yield render_donation_page(platform, counter, retry_different_username(selectedUsername), progress)
@@ -62,7 +62,7 @@ def process(sessionId):
                             break
 
                     # Happy flow !
-                    else: 
+                    else:
                         (username_partner, ) = set(list_with_users) - set([selectedUsername])
                         df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
                         df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
@@ -91,7 +91,7 @@ def process(sessionId):
 
         progress += step_percentage
 
-        # This check should be here to account for the skip button being 
+        # This check should be here to account for the skip button being
         # This button can be pressed at any moment
         if data is not None:
             # STEP 2: ask for consent
@@ -223,17 +223,17 @@ def confirm_username(platform):
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
 def prompt_file(platform,counter, extensions,donatedFileFlag):
-    promptStringsSuccess = ['Hi, you are about to donate your first whatsapp file. ',
-    f'You have successfully donated your first file. It\'s time for the second one.',
-    'Nice, your second upload was successful. Let\'s move to the third file.',
-    'Great, we got that. You have two files left. Expecting your fourth whatsapp now.',
-    'Fourth file done! We are almost there, you are about to donate your last whatsapp file. ']
+    promptStringsSuccess = ['He, Je kunt nu je eerste WhatsApp chat met ons delen.',
+   'Gelukt! Je hebt je eerste chat gedeeld. Tijd voor de tweede.',
+   'Nice, de tweede is ook gelukt. Op naar de derde chat.',
+   'Mooi, Die hebben we ook ontvangen. Nog twee chats te gaan. We verwachte nu je vierde chat',
+   'Vierde chat is klaar! We zijn er bijna, maar nog niet helemaal. Je mag nu je laatste chat met ons delen.']
 
     # only valid from the second round.
-    promptStringNoSuscess = ['Ups, no file was donated in the previous step (File 1). Want to try from stratch again?',
-    'Ups, no file was donated in the previous step (File 2). Want to try from stratch again?',
-    'Ups, no file was donated in the previous step (File 3). Want to try from stratch again?',
-    'Ups, no file was donated in the previous step (File 4). Want to try from stratch again?']
+    promptStringNoSuscess = ['Oops, in de vorige stap (bestand 1) is er geen (juist) bestand gedeeld. Wil je het opnieuw proberen?',
+    'Oops, in de vorige stap (bestand 2) is er geen (juist) bestand gedeeld. Wil je het opnieuw proberen?',
+    'Oops, in de vorige stap (bestand 3) is er geen (juist) bestand gedeeld. Wil je het opnieuw proberen?',
+    'Oops, in de vorige stap (bestand 4) is er geen (juist) bestand gedeeld. Wil je het opnieuw proberen?']
 
     descriptionString = ''
 

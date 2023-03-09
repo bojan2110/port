@@ -84,28 +84,25 @@ export const SplashScreen = (props: Props): JSX.Element => {
     <>
       <div className='text-bodylarge font-body text-grey1'>
         <div className='mb-4'>
-          U kunt zo uw gegevens gaan doneren voor een onderzoek van onderzoeksinstituut ASCoR aan de Universiteit van Amsterdam. De gegevens die we u vragen te doneren worden gebruikt voor wetenschappelijke onderzoek om inzicht te krijgen in de werkwijze van sociale media.
+          Via deze website kun je veilig je sociale media gesprekken delen met de onderzoekers van de Erasmus Universiteit Rotterdam.
         </div>
         <div className='mb-4'>
-          We leggen u stap voor stap wat er van u verwacht wordt. Tijdens deze stappen worden geen gegevens opgeslagen of naar ASCoR verstuurd. U kunt zelf rijen uit uw data verwijderen die u niet wilt doneren. Pas als u de vraag krijgt of u de gegevens wilt doneren en u op de knop “Ja, doneer” klikt, worden de gegevens gedoneerd en opgeslagen.
-        </div>
-        <div className='mb-4'>
-          Door op de knop “<span className='font-bodybold'>Ja, doneer</span>” te klikken:
-        </div>
+          We leggen eerst stap voor stap wat er van je verwacht wordt. In de vragenlijst heb je aangegeven met welke mensen in je klas je het meest omgaat.  Daarin werd ook gevraagd om van deze mensen de WhatsApp chats te exporteren.
+           </div>
+
         <div className='flex flex-col gap-3 mb-6'>
           <Bullet>
-            <div>Geeft u volledig en vrijwillig toestemming om uw data te doneren voor dit onderzoek.'</div>
+            <div>Aller eerst  selecteer je jouw naam. Het is belangrijk dat je je eigen naam selecteert zodat je niet per ongeluk de gegevens van iemand anders met ons deelt. </div>
           </Bullet>
           <Bullet>
-            <div>Geeft u aan te weten dat als uw gegevens worden gebruikt in wetenschappelijke publicaties, of deze op een andere manier openbaar worden gemaakt, dit dan anoniem gebeurt.</div>
+            <div>Vervolgens zie je de data zoals deze gedeeld zal worden, waarin informatie zoals namen verwijderd zijn. Hier kun je ook kiezen om berichten niet te delen met ons door ze te verwijderen. Ook kun je de zoekfunctie gebruiken om bepaalde berichten te zoeken en te verwijderen.  </div>
           </Bullet>
           <Bullet>
-            <div>Geeft u aan te weten dat u het recht hebt om uw toestemming binnen 7 dagen in te trekken door contact met Panel Inzicht op te nemen.</div>
+            <div>Pas als je op de knop "Versturen" klikt, worden de gegevens verstuurd en opgeslagen. Door op de knop “Versturen” te klikken geef je aan goed geïnformeerd te zijn over het onderzoek en vrijwillig je WhatsApp chats te delen. </div>
           </Bullet>
         </div>
-        <div className='mb-10'>
-          Deze website houdt ook uw activiteiten bij – bijvoorbeeld op welke pagina’s van deze website u klikt – als deel van dit onderzoek. U kunt meer informatie op onze privacy pagina vinden.
-        </div>
+
+
       </div>
     </>
   )
