@@ -21,6 +21,7 @@ def process(sessionId):
     for _, platform in enumerate(platforms):
 
         data = None
+        username_partner = ""
         progress += step_percentage
         counter = counter + 1
 
@@ -35,29 +36,40 @@ def process(sessionId):
                 if not df_with_chats.empty and fileResult.value not in donatedFileNames:
 
                     df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
-                    if selectedUsername == "":
-                        selection = yield prompt_radio_menu(platform, counter, progress, df_with_chats)
-                        selectedUsername = selection.value
+                    list_with_users = port.whatsapp.extract_users(df_with_chats)
 
-                    if selection.__type__ == "PayloadString":
-                        # steps after selection
-
-                        # Check if selected user is present in chat
-                        list_with_users = port.whatsapp.extract_users(df_with_chats)
-                        if selectedUsername in list_with_users:
-                            df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
-                            df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
-                            df_with_chats = port.whatsapp.remove_date_column(df_with_chats)
-                            list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
-                            data = list_with_df_with_chats
-                            break
+                    # Check how many users are found in chat should be checked before initial user selection
+                    if len(list_with_users) > 2:
+                        retry_result = yield render_donation_page(platform, counter, retry_no_group_chat(), progress)
+                        if retry_result.__type__ == "PayloadTrue":
+                            continue
                         else:
-                            print('no data for this user')
-                            retry_result = yield render_donation_page(platform, counter, different_username(selectedUsername), progress)
-                            if retry_result.__type__ == "PayloadTrue":
-                                continue
-                            else:
-                                break
+                            break
+
+                    # Determine username upon first donation
+                    if selectedUsername == "":
+                        selection = yield prompt_radio_menu(platform, counter, progress, list_with_users)
+                        # If user skips during this process, selectedUsername remains equal to ""
+                        if selection.__type__ == "PayloadString":
+                            selectedUsername = selection.value
+                    
+                    # If selected does not occur in chat
+                    if selectedUsername not in list_with_users:
+                        retry_result = yield render_donation_page(platform, counter, retry_different_username(selectedUsername), progress)
+                        if retry_result.__type__ == "PayloadTrue":
+                            continue
+                        else:
+                            break
+
+                    # Happy flow !
+                    else: 
+                        (username_partner, ) = set(list_with_users) - set([selectedUsername])
+                        df_with_chats = port.whatsapp.filter_username(df_with_chats, selection.value)
+                        df_with_chats = port.whatsapp.remove_name_column(df_with_chats)
+                        df_with_chats = port.whatsapp.remove_date_column(df_with_chats)
+                        list_with_df_with_chats = port.whatsapp.split_dataframe(df_with_chats, 5000)
+                        data = list_with_df_with_chats
+                        break
 
                 # Check if file was not previously donated
                 if fileResult.value in donatedFileNames:
@@ -84,18 +96,16 @@ def process(sessionId):
         if data is not None:
             # STEP 2: ask for consent
             donatedFileFlag[counter-1] = True
-            prompt = prompt_consent(data)
+            prompt = prompt_consent(data, username_partner)
             consent_result = yield render_donation_page(platform, counter, prompt, progress)
             if consent_result.__type__ == "PayloadJSON":
                 yield donate(f"{sessionId}-{platform}", consent_result.value)
                 donatedFileNames.append(fileResult.value)
 
-
     yield render_end_page()
 
 
-
-def prompt_radio_menu(platform, counter, progress, df_with_chats):
+def prompt_radio_menu(platform, counter, progress, list_with_users):
 
     title = props.Translatable({
         "en": f"",
@@ -110,7 +120,6 @@ def prompt_radio_menu(platform, counter, progress, df_with_chats):
         "nl": 'Gesprek ' + str(counter)
     }))
 
-    list_with_users = port.whatsapp.extract_users(df_with_chats)
     radio_input = [{"id": index, "value": username} for index, username in enumerate(list_with_users)]
     body = props.PropsUIPromptRadioInput(title, description, radio_input)
     footer = props.PropsUIFooter(progress)
@@ -129,7 +138,6 @@ def render_donation_page(platform,counter, body, progress):
         "nl": 'Conversation ' + str(counter) + ' of 5'
     }))
 
-
     footer = props.PropsUIFooter(progress)
     page = props.PropsUIPageDonation(platform, header, body, footer)
     return CommandUIRender(page)
@@ -145,8 +153,8 @@ def retry_different_file(file_name):
         "nl": "Probeer opnieuw"
     })
     cancel = props.Translatable({
-        "en": "Continue",
-        "nl": "Verder"
+        "en": "",
+        "nl": ""
     })
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
@@ -167,7 +175,23 @@ def retry_confirmation(platform):
     return props.PropsUIPromptConfirm(text, ok, cancel)
 
 
-def different_username(username):
+def retry_no_group_chat():
+    text = props.Translatable({
+        "en": f"Oeps je hebt per ongeluk een groupchat geselecteerd, probeer opnieuw",
+        "nl": f"Oeps je hebt per ongeluk een groupchat geselecteerd, probeer opnieuw"
+    })
+    ok = props.Translatable({
+        "en": "Try again",
+        "nl": "Probeer opnieuw"
+    })
+    cancel = props.Translatable({
+        "en": "",
+        "nl": ""
+    })
+    return props.PropsUIPromptConfirm(text, ok, cancel)
+
+
+def retry_different_username(username):
     text = props.Translatable({
         "en": f"Your username {username} was not found in the uploaded file. Please try again by uploading a valid file. Otherwise, restart the data donation process by reloading the website.",
         "nl": f"Uw gebruikersnaam {username} is niet gevonden in het geüploade bestand. Probeer het opnieuw door een geldig bestand te uploaden. Start anders het gegevensdonatieproces opnieuw door de website opnieuw te laden."
@@ -232,11 +256,11 @@ def prompt_file(platform,counter, extensions,donatedFileFlag):
 
 
 
-def prompt_consent(list_with_df_with_chats):
+def prompt_consent(list_with_df_with_chats, username_partner):
 
     table_title = props.Translatable({
-        "en": "Zip file contents",
-        "nl": "Inhoud zip bestand"
+        "en": f"Chats die je naar {username_partner} hebt gestuurd",
+        "nl": f"Chats die je naar {username_partner} hebt gestuurd",
     })
 
     table_list = [props.PropsUIPromptConsentFormTable(f"zip_content: {index}", table_title, df)
