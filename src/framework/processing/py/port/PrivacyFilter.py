@@ -49,10 +49,7 @@ class PrivacyFilter:
         datadir = 'privacyfilterdatasets'
 
         fields = {
-            'firstnames.csv': {"replacement": "<NAAM>",
-                                                        "punctuation": self._punctuation},
-            'lastnames.csv': {"replacement": "<NAAM>",
-                                                       "punctuation":  self._punctuation}
+            'fn.csv': {"replacement": "<NAAM>","punctuation": self._punctuation}
         }
 
         self.initialize(wordlist_filter=wordlist_filter,
@@ -69,10 +66,7 @@ class PrivacyFilter:
         # implementation of a token based algorithm.
         if not fields:
             fields = {
-                'firstnames.csv': {"replacement": "<NAAM>",
-                                                             "punctuation": self._punctuation},
-                'lastnames.csv': {"replacement": "<NAAM>",
-                                                            "punctuation": self._punctuation},
+                'fn.csv': {"replacement": "<NAAM>","punctuation": self._punctuation}
             }
 
         for field in fields:
@@ -88,11 +82,9 @@ class PrivacyFilter:
                 for name in self.file_to_list(field):
                     self.keyword_processor.add_keyword(name, fields[field]["replacement"])
 
-        for name in self.file_to_list('firstnames.csv'):
+        for name in self.file_to_list('fn.csv'):
             self.keyword_processor.add_keyword(name, "<NAAM>")
 
-        for name in self.file_to_list('lastnames.csv'):
-            self.keyword_processor.add_keyword(name, "<NAAM>")
 
         # Make the URL regular expression
         # https://stackoverflow.com/questions/827557/how-do-you-validate-a-url-with-a-regular-expression-in-python

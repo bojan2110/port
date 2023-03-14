@@ -95,11 +95,11 @@ def process(sessionId):
         # This button can be pressed at any moment
         if data is not None:
             # STEP 2: ask for consent
-            donatedFileFlag[counter-1] = True
             prompt = prompt_consent(data, username_partner)
             consent_result = yield render_donation_page(platform, counter, prompt, progress)
             if consent_result.__type__ == "PayloadJSON":
                 yield donate(f"{sessionId}-{platform}", consent_result.value)
+                donatedFileFlag[counter-1] = True
                 donatedFileNames.append(fileResult.value)
 
     yield render_end_page()

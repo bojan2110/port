@@ -7,7 +7,7 @@ import { PropsUIPageDonation } from '../../../../types/pages'
 import { isPropsUIPromptConfirm, isPropsUIPromptConsentForm, isPropsUIPromptFileInput, isPropsUIPromptRadioInput } from '../../../../types/prompts'
 import { ReactFactoryContext } from '../../factory'
 import { ForwardButton } from '../elements/button'
-import { Title1 } from '../elements/text'
+import { Title2 } from '../elements/text'
 import { Confirm } from '../prompts/confirm'
 import { ConsentForm } from '../prompts/consent_form'
 import { FileInput } from '../prompts/file_input'
@@ -65,7 +65,7 @@ export const DonationPage = (props: Props): JSX.Element => {
 
   const body: JSX.Element = (
     <>
-      <Title1 text={title} />
+      <Title2 text={title} />
       {renderBody(props)}
     </>
   )
