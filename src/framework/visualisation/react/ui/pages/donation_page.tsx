@@ -21,9 +21,8 @@ import { Progress } from '../elements/progress'
 type Props = Weak<PropsUIPageDonation> & ReactFactoryContext
 
 export const DonationPage = (props: Props): JSX.Element => {
-
   // render to top of the page on reload
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0)
 
   const { title, forwardButton } = prepareCopy(props)
   // const { platform, locale, resolve } = props

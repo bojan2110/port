@@ -149,9 +149,17 @@ export var Table = function (_a) {
         }
         return alteredRows.current.filter(function (row) { return matchRow(row, query.current); });
     }
-    function matchRow(row, query) {
+    function matchRow(row, query, caseSensitive) {
+        if (caseSensitive === void 0) { caseSensitive = false; }
         var rowText = row.cells.map(function (cell) { return cell.text; }).join(' ');
-        return query.find(function (word) { return !rowText.includes(word); }) === undefined;
+        if (caseSensitive) {
+            return query.find(function (word) { return !rowText.includes(word); }) === undefined;
+        }
+        else {
+            var rowTextLowerCase_1 = rowText.toLowerCase();
+            var queryLowerCase = query.map(function (word) { return word.toLowerCase(); });
+            return queryLowerCase.find(function (word) { return !rowTextLowerCase_1.includes(word); }) === undefined;
+        }
     }
     function handleSelectHead() {
         var allRowsSelected = state.selected.length === state.rows.length;

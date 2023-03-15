@@ -14,7 +14,7 @@ import TextBundle from '../../../../text_bundle';
 import { Translator } from '../../../../translator';
 import { isPropsUIPromptConfirm, isPropsUIPromptConsentForm, isPropsUIPromptFileInput, isPropsUIPromptRadioInput } from '../../../../types/prompts';
 import { ForwardButton } from '../elements/button';
-import { Title1 } from '../elements/text';
+import { Title2 } from '../elements/text';
 import { Confirm } from '../prompts/confirm';
 import { ConsentForm } from '../prompts/consent_form';
 import { FileInput } from '../prompts/file_input';
@@ -24,6 +24,8 @@ import { Footer } from './templates/footer';
 import { Page } from './templates/page';
 import { Progress } from '../elements/progress';
 export var DonationPage = function (props) {
+    // render to top of the page on reload
+    window.scrollTo(0, 0);
     var _a = prepareCopy(props), title = _a.title, forwardButton = _a.forwardButton;
     // const { platform, locale, resolve } = props
     var locale = props.locale, resolve = props.resolve;
@@ -48,7 +50,7 @@ export var DonationPage = function (props) {
         resolve === null || resolve === void 0 ? void 0 : resolve({ __type__: 'PayloadFalse', value: false });
     }
     var footer = (_jsx(Footer, { middle: _jsx(Progress, { percentage: props.footer.progressPercentage }), right: _jsxs("div", __assign({ className: 'flex flex-row' }, { children: [_jsx("div", { className: 'flex-grow' }), _jsx(ForwardButton, { label: forwardButton, onClick: handleSkip })] })) }));
-    var body = (_jsxs(_Fragment, { children: [_jsx(Title1, { text: title }), renderBody(props)] }));
+    var body = (_jsxs(_Fragment, { children: [_jsx(Title2, { text: title }), renderBody(props)] }));
     return (_jsx(Page, { body: body, footer: footer }));
 };
 function prepareCopy(_a) {

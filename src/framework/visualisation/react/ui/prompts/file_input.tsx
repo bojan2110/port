@@ -53,7 +53,7 @@ export const FileInput = (props: Props): JSX.Element => {
           </div>
           <div className='flex flex-row gap-4 items-center'>
             <div className={`${selectedFile === undefined ? 'opacity-100' : 'opacity-30'}`}>
-            <PrimaryButton onClick={handleClick} label={selectButton} color='bg-tertiary text-grey1' />
+              <PrimaryButton onClick={handleClick} label={selectButton} color='bg-tertiary text-grey1' />
             </div>
           </div>
         </div>

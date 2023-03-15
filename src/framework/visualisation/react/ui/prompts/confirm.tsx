@@ -19,7 +19,7 @@ export const Confirm = (props: Props): JSX.Element => {
     resolve?.({ __type__: 'PayloadFalse', value: false })
   }
 
-  if(cancel==''){
+  if (cancel === '') {
     return (
       <>
         <BodyLarge text={text} margin='mb-4' />
@@ -30,18 +30,15 @@ export const Confirm = (props: Props): JSX.Element => {
     )
   }
 
-    return (
-      <>
-        <BodyLarge text={text} margin='mb-4' />
-        <div className='flex flex-row gap-4'>
-          <PrimaryButton label={ok} onClick={handleOk} color='text-grey1 bg-tertiary' />
-          <PrimaryButton label={cancel} onClick={handleCancel} enabled={cancel === undefined}  color='text-white bg-primary' />
-        </div>
-      </>
-    )
-
-
-
+  return (
+    <>
+      <BodyLarge text={text} margin='mb-4' />
+      <div className='flex flex-row gap-4'>
+        <PrimaryButton label={ok} onClick={handleOk} color='text-grey1 bg-tertiary' />
+        <PrimaryButton label={cancel} onClick={handleCancel} enabled={cancel === undefined} color='text-white bg-primary' />
+      </div>
+    </>
+  )
 }
 
 interface Copy {

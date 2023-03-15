@@ -6,6 +6,8 @@ import TextBundle from '../../../../text_bundle';
 import { Translator } from '../../../../translator';
 import { BodyLarge, Title1 } from '../elements/text';
 export var EndPage = function (props) {
+    // render to top of the page on reload
+    window.scrollTo(0, 0);
     var _a = prepareCopy(props), title = _a.title, text = _a.text;
     var footer = _jsx(Footer, {});
     var body = (_jsxs(_Fragment, { children: [_jsx(Title1, { text: title }), _jsx(BodyLarge, { text: text })] }));
