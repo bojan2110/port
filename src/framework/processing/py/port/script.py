@@ -31,6 +31,9 @@ def process(sessionId):
             if fileResult.__type__ == 'PayloadString':
 
                 df_with_chats = port.whatsapp.parse_chat(fileResult.value)
+                df_with_chats = port.whatsapp.reverse_dataframe(df_with_chats)
+
+                print('df_with_chats head', df_with_chats.head(5))
 
                 # If data extracted was successful
                 if not df_with_chats.empty and fileResult.value not in donatedFileNames:

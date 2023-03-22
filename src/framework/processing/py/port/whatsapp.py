@@ -174,9 +174,17 @@ def remove_name_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def remove_date_column(df: pd.DataFrame) -> pd.DataFrame:
+def reverse_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """
     Extracts unique usersnames from chat dataframe
+    """
+    df = df.sort_values('date',ascending=False)
+    return df
+
+
+def remove_date_column(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removing the date column from the chat dataframe
     """
     df = df.drop(columns=["date"])
     return df
