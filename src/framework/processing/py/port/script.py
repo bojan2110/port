@@ -1,9 +1,25 @@
+import logging
+import json
+import io
+
 import port.api.props as props
 from port.api.commands import (CommandSystemDonate, CommandUIRender)
 import port.whatsapp
 
+LOG_STREAM = io.StringIO()
+
+logging.basicConfig(
+    stream=LOG_STREAM,  # comment this line if you want the logs in std out
+    level=logging.INFO,  # change to DEBUG for debugging logs
+    format="%(asctime)s --- %(name)s --- %(levelname)s --- %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S%z",
+)
+
+LOGGER = logging.getLogger(__name__)
+
 def process(sessionId):
-    yield donate(f"{sessionId}-tracking", '[{ "message": "user entered script" }]')
+    LOGGER.info("Starting the donation flow")
+    yield donate_logs(f"{sessionId}-tracking")
 
     platforms = ["Whatsapp","Whatsapp","Whatsapp","Whatsapp","Whatsapp"]
 
@@ -29,11 +45,11 @@ def process(sessionId):
             promptFile = prompt_file(platform,counter, "application/zip, text/plain",donatedFileFlag)
             fileResult = yield render_donation_page(platform, counter, promptFile, progress)
             if fileResult.__type__ == 'PayloadString':
+                LOGGER.info("Valid file payload")
+                yield donate_logs(f"{sessionId}-tracking")
 
                 df_with_chats = port.whatsapp.parse_chat(fileResult.value)
                 df_with_chats = port.whatsapp.reverse_dataframe(df_with_chats)
-
-                print('df_with_chats head', df_with_chats.head(5))
 
                 # If data extracted was successful
                 if not df_with_chats.empty and fileResult.value not in donatedFileNames:
@@ -104,6 +120,11 @@ def process(sessionId):
                 yield donate(f"{sessionId}-{platform}", consent_result.value)
                 donatedFileFlag[counter-1] = True
                 donatedFileNames.append(fileResult.value)
+                LOGGER.info("Data donated: %s %s", platform, counter)
+                yield donate_logs(f"{sessionId}-tracking")
+            else:
+                LOGGER.info("Skipped ater reviewing consent: %s %s", platform, counter)
+                yield donate_logs(f"{sessionId}-tracking")
 
     yield render_end_page()
 
@@ -274,3 +295,14 @@ def prompt_consent(list_with_df_with_chats, username_partner):
 
 def donate(key, json_string):
     return CommandSystemDonate(key, json_string)
+
+
+def donate_logs(key):
+    log_string = LOG_STREAM.getvalue()  # read the log stream
+
+    if log_string:
+        log_data = log_string.split("\n")
+    else:
+        log_data = ["no logs"]
+
+    return donate(key, json.dumps(log_data))
