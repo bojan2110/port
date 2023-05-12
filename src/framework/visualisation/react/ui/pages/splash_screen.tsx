@@ -111,7 +111,7 @@ export const SplashScreen = (props: Props): JSX.Element => {
   const body: JSX.Element = (
     <>
       <div className='flex justify-center'>
-        <img src={LogoSvg} className='w-30' />
+        <img src={LogoSvg} className='w-40 mb-10' />
       </div>
 
       <Title1 text={title} />
