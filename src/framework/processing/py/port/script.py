@@ -117,7 +117,7 @@ def process(sessionId):
             prompt = prompt_consent(data, username_partner)
             consent_result = yield render_donation_page(platform, counter, prompt, progress)
             if consent_result.__type__ == "PayloadJSON":
-                yield donate(f"{sessionId}-{platform}", consent_result.value)
+                yield donate(f"{sessionId}-{platform}-{counter}", consent_result.value)
                 donatedFileFlag[counter-1] = True
                 donatedFileNames.append(fileResult.value)
                 LOGGER.info("Data donated: %s %s", platform, counter)
