@@ -140,8 +140,8 @@ def prompt_radio_menu(platform, counter, progress, list_with_users):
         "nl": f"Selecteer uw gebruikersnaam"
     })
     header = props.PropsUIHeader(props.Translatable({
-        "en": 'Gesprek ' + str(counter),
-        "nl": 'Gesprek ' + str(counter)
+        "en": 'Chat ' + str(counter),
+        "nl": 'Chat ' + str(counter)
     }))
 
     radio_input = [{"id": index, "value": username} for index, username in enumerate(list_with_users)]
@@ -158,8 +158,8 @@ def render_end_page():
 
 def render_donation_page(platform,counter, body, progress):
     header = props.PropsUIHeader(props.Translatable({
-        "en": 'Gesprek ' + str(counter) + ' of 5',
-        "nl": 'Gesprek ' + str(counter) + ' of 5'
+        "en": 'Chat ' + str(counter) + ' of 5',
+        "nl": 'Chat ' + str(counter) + ' of 5'
     }))
 
     footer = props.PropsUIFooter(progress)
