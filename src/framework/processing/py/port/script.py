@@ -49,11 +49,11 @@ def process(sessionId):
                 yield donate_logs(f"{sessionId}-tracking")
 
                 df_with_chats = port.whatsapp.parse_chat(fileResult.value)
-                df_with_chats = port.whatsapp.reverse_dataframe(df_with_chats)
 
                 # If data extracted was successful
                 if not df_with_chats.empty and fileResult.value not in donatedFileNames:
 
+                    df_with_chats = port.whatsapp.reverse_dataframe(df_with_chats)
                     df_with_chats = port.whatsapp.remove_empty_chats(df_with_chats)
                     list_with_users = port.whatsapp.extract_users(df_with_chats)
 
@@ -140,7 +140,7 @@ def prompt_radio_menu(platform, counter, progress, list_with_users):
         "nl": f"Selecteer uw gebruikersnaam"
     })
     header = props.PropsUIHeader(props.Translatable({
-        "en": 'Conversation ' + str(counter),
+        "en": 'Gesprek ' + str(counter),
         "nl": 'Gesprek ' + str(counter)
     }))
 
@@ -158,8 +158,8 @@ def render_end_page():
 
 def render_donation_page(platform,counter, body, progress):
     header = props.PropsUIHeader(props.Translatable({
-        "en": 'Conversation ' + str(counter) + ' of 5',
-        "nl": 'Conversation ' + str(counter) + ' of 5'
+        "en": 'Gesprek ' + str(counter) + ' of 5',
+        "nl": 'Gesprek ' + str(counter) + ' of 5'
     }))
 
     footer = props.PropsUIFooter(progress)
