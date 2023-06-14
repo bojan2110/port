@@ -226,6 +226,7 @@ def construct_message(current_line: str, next_line: str, regex: str) -> Tuple[bo
 
 
 def read_chat_file(path_to_chat_file: str) -> list[str]:
+    out = []
     try:
         if zipfile.is_zipfile(path_to_chat_file):
 
@@ -240,12 +241,12 @@ def read_chat_file(path_to_chat_file: str) -> list[str]:
             with open(path_to_chat_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
-        lines = [remove_unwanted_characters(line) for line in lines]
-        return lines
+        out = [remove_unwanted_characters(line) for line in lines]
 
     except Exception as e:
-        raise e
+        logger.error(e)
 
+    return out
 
 def parse_chat(path_to_chat: str) -> pd.DataFrame:
     """
@@ -289,20 +290,3 @@ def parse_chat(path_to_chat: str) -> pd.DataFrame:
         return pd.DataFrame(out)
 
 
-#PATH_1 = "/home/turbo/ddp-inspector/example_ddps/whatsapp/WhatsApp Chat - Roos 2.0.zip"
-#PATH_2 = "/home/turbo/ddp-inspector/example_ddps/whatsapp/whatsapp_bojan/_chat.txt"
-#PATH_3 = "/home/turbo/ddp-inspector/example_ddps/whatsapp/WhatsApp-chat met Niek De Schipper.txt"
-####
-#df = parse_chat(PATH_1)
-####parse_chat(PATH_2)
-#df_with_chats = df
-#
-#df_with_chats = filter_username(df_with_chats, "Niek")
-#df_with_chats = remove_name_column(df_with_chats)
-#df_with_chats = remove_date_column(df_with_chats)
-#list_with_df_with_chats = split_dataframe(df_with_chats, 5000)
-#len(list_with_df_with_chats)
-#
-#list_with_df_with_chats[1].reset_index(drop=True)
-#
-#[(index, object) for index, object in enumerate([3,2,1])]
