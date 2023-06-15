@@ -11,9 +11,10 @@ var __assign = (this && this.__assign) || function () {
 };
 import { jsx as _jsx } from "react/jsx-runtime";
 import { EndPage } from './ui/pages/end_page';
-import { isPropsUIPageEnd, isPropsUIPageDonation, isPropsUIPageSplashScreen } from '../../types/pages';
+import { isPropsUIPageEnd, isPropsUIPageDonation, isPropsUIPageSplashScreen, isPropsUIPageError } from '../../types/pages';
 import { DonationPage } from './ui/pages/donation_page';
 import { SplashScreen } from './ui/pages/splash_screen';
+import { ErrorPage } from './ui/pages/error_page';
 var ReactFactory = /** @class */ (function () {
     function ReactFactory() {
     }
@@ -26,6 +27,9 @@ var ReactFactory = /** @class */ (function () {
         }
         if (isPropsUIPageDonation(page)) {
             return _jsx(DonationPage, __assign({}, page, context));
+        }
+        if (isPropsUIPageError(page)) {
+            return _jsx(ErrorPage, __assign({}, page, context));
         }
         throw TypeError('Unknown page: ' + JSON.stringify(page));
     };

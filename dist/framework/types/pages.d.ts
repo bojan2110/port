@@ -1,6 +1,6 @@
 import { PropsUIFooter, PropsUIHeader } from './elements';
 import { PropsUIPromptFileInput, PropsUIPromptConfirm, PropsUIPromptConsentForm, PropsUIPromptRadioInput } from './prompts';
-export declare type PropsUIPage = PropsUIPageSplashScreen | PropsUIPageDonation | PropsUIPageEnd;
+export declare type PropsUIPage = PropsUIPageSplashScreen | PropsUIPageDonation | PropsUIPageEnd | PropsUIPageError;
 export declare function isPropsUIPage(arg: any): arg is PropsUIPage;
 export interface PropsUIPageSplashScreen {
     __type__: 'PropsUIPageSplashScreen';
@@ -18,3 +18,8 @@ export interface PropsUIPageEnd {
     __type__: 'PropsUIPageEnd';
 }
 export declare function isPropsUIPageEnd(arg: any): arg is PropsUIPageEnd;
+export interface PropsUIPageError {
+    __type__: 'PropsUIPageError';
+    stacktrace: string;
+}
+export declare function isPropsUIPageError(arg: any): arg is PropsUIPageError;
